@@ -6,10 +6,14 @@ docker build -t kaushlendra277/multi-worker:latest -t kaushlendra277/multi-worke
 # 7.1 Building images, and tagging - - end
 
 # 7.2 push each other to docker hub - start
+# To push docker images create kaushlendra277/multi-client in docker hub first
+echo "pushing multi-client"
 docker push kaushlendra277/multi-client:latest
 docker push kaushlendra277/multi-client:$SHA
+echo "pushing multi-server"
 docker push kaushlendra277/multi-server:latest
 docker push kaushlendra277/multi-server:$SHA
+echo "pushing multi-worker"
 docker push kaushlendra277/multi-worker:latest
 docker push kaushlendra277/multi-worker:$SHA
 # 7.2 push each other to docker hub - end
