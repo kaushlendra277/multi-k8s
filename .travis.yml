@@ -4,7 +4,7 @@ services: # meaning ?
 
 env:
   global:
-    - SHA= v2.0 # this returns the latest git commit and assign that to variable "SHA"
+    - SHA=v2 # this returns the latest git commit and assign that to variable "SHA"
     - CLOUDSDK_CORE_DISABLE_PROMPTS=1 # meaning ?
 
 before_install:
