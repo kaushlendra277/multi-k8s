@@ -2,32 +2,41 @@ sudo: required # meaning ?
 services: # meaning ?
   - docker
 
+env:
+  global:
+    - SHA = $(git rev-parse HEAD) # this returns the latest git commit and assign that to variable "SHA"
+    - CLOUDSDK_CORE_DISABLE_PROMPTS=1 # meaning ?
+
 before_install:
+  # 1. Install Google Cloud SDK CLI - Start
   - openssl aes-256-cbc -K $encrypted_bb7a40693878_key -iv $encrypted_bb7a40693878_iv -in travis-deployer.json.enc -out travis-deployer.json -d
   # setting up google cloud CLI SDK - start
   - curl https://sdk.cloud.google.com | bash > /dev/null; # download latest GC SDK | install it instance assigned by travis CI locally
   - source $HOME/google-cloud-sdk/path.bash.inc
   # setting up google cloud CLI SDK - end
   - gcloud components update kubectl # GC CLI install and update kubectl inside travis assign instance
-  - gcloud auth activate-service-account --key-file service-account.json # authenticating GCP user
-
-
-
-
-
-  - docker build -t cygnetops/docker-react -f Dockerfile.dev .
-
+  - gcloud auth activate-service-account --key-file travis-deployer.json # authenticating GCP user
+  # 1. Install Google Cloud SDK CLI - end
+  #  2. Configure the GCP SDK with Google cloud auth info -start
+  - gcloud config set project multi-k8s-290406 # id of GCP project
+  - gcloud config set compute/zone us-central1-c # zone of k8s cluster
+  - gcloud container clusters get-credentials multi-k8s-cluster # GCP k8s cluster name
+  #  2. Configure the GCP SDK with Google cloud auth info -end
+  #  3. Login to Docker CLI - Start
+  - echo $DOCKER_PASSWORD | docker login -u "$DOCKER_USERNAME" --password-stdin
+  #  3. Login to Docker CLI - end
+  #  4. Build the test version of multi-client - Start
+  - docker build -t kaushlendra277/react-test -f ./client/Dockerfile.dev ./client
+  #  4. Build the test version of multi-client - end
+#  5. Run Test - Start
 script:
-  - docker run -e CI=true cygnetops/docker-react npm test
+  - docker run -e CI=true kaushlendra277/react-test npm test
+#  5. Run Test - end
+
+# 6. if all tests runs successfully then below next steps will be executed
 
 deploy:
-  provider: elasticbeanstalk
-  region: 'us-east-1'
-  app: 'docker'
-  env: 'docker-env'
-  bucket_name: 'elasticbeanstalk-us-east-1-923445559289'
-  bucket_path: 'docker'
+  provider: script
+  script: bash ./deploy.sh
   on:
     branch: master
-  access_key_id: $AWS_ACCESS_KEY
-  secret_access_key: $AWS_SECRET_KEY
