@@ -1,0 +1,33 @@
+sudo: required # meaning ?
+services: # meaning ?
+  - docker
+
+before_install:
+  - openssl aes-256-cbc -K $encrypted_bb7a40693878_key -iv $encrypted_bb7a40693878_iv -in travis-deployer.json.enc -out travis-deployer.json -d
+  # setting up google cloud CLI SDK - start
+  - curl https://sdk.cloud.google.com | bash > /dev/null; # download latest GC SDK | install it instance assigned by travis CI locally
+  - source $HOME/google-cloud-sdk/path.bash.inc
+  # setting up google cloud CLI SDK - end
+  - gcloud components update kubectl # GC CLI install and update kubectl inside travis assign instance
+  - gcloud auth activate-service-account --key-file service-account.json # authenticating GCP user
+
+
+
+
+
+  - docker build -t cygnetops/docker-react -f Dockerfile.dev .
+
+script:
+  - docker run -e CI=true cygnetops/docker-react npm test
+
+deploy:
+  provider: elasticbeanstalk
+  region: 'us-east-1'
+  app: 'docker'
+  env: 'docker-env'
+  bucket_name: 'elasticbeanstalk-us-east-1-923445559289'
+  bucket_path: 'docker'
+  on:
+    branch: master
+  access_key_id: $AWS_ACCESS_KEY
+  secret_access_key: $AWS_SECRET_KEY
