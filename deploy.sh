@@ -1,3 +1,4 @@
+# refer - https://github.com/StephenGrider/DockerCasts/blob/master/complex/deploy.sh
 # 7. Build all our images, tag each one, push each other to docker hub - Start
 # 7.1 Building images, and tagging - start
 echo -e "Git commit id - $SHA"
